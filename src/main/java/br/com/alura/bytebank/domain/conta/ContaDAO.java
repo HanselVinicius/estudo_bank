@@ -1,18 +1,21 @@
 package br.com.alura.bytebank.domain.conta;
 
-import br.com.alura.bytebank.ConnectionFactory;
 import br.com.alura.bytebank.domain.cliente.Cliente;
+import br.com.alura.bytebank.domain.cliente.DadosCadastroCliente;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ContaDAO {
 
     private Connection conn;
 
-     ContaDAO(Connection connection) {
+     public ContaDAO(Connection connection) {
             this.conn = connection;
      }
 
@@ -32,8 +35,67 @@ public class ContaDAO {
              preparedStatement.setString(5, dadosDaConta.dadosCliente().email());
 
              preparedStatement.execute();
+             preparedStatement.close();
+             conn.close();
          }catch (SQLException e){
              throw new RuntimeException(e);
          }
      }
+
+
+     public Set<Conta> listar(){
+         PreparedStatement ps;
+         ResultSet rs;
+         Set<Conta> contas = new HashSet<>();
+         String sql = "SELECT * FROM conta";
+         try {
+              ps = conn.prepareStatement(sql);
+              rs = ps.executeQuery();
+
+            while(rs.next()){
+                Integer numero = rs.getInt(1);
+                BigDecimal saldo = rs.getBigDecimal(2);
+                String nome = rs.getString(3);
+                String cpf = rs.getString(4);
+                String email = rs.getString(5);
+                Cliente cliente = new Cliente(new DadosCadastroCliente(nome, cpf, email));
+                contas.add(new Conta(numero,cliente));
+
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+         }catch (SQLException e){
+             throw new RuntimeException(e);
+         }
+         return contas;
+
+    }
+
+
+    public Conta pegaConta(int numeroConta){
+        PreparedStatement ps;
+        ResultSet rs;
+         Conta conta = null;
+        String sql = "SELECT * FROM conta WHERE numero = "+numeroConta;
+        try {
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                Integer numeroRecuperado = rs.getInt(1);
+                BigDecimal saldo = rs.getBigDecimal(2);
+                Cliente  cliente = new Cliente(new DadosCadastroCliente(rs.getString(3), rs.getString(4), rs.getString(5)));
+                conta = new Conta(numeroRecuperado,cliente);
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+            return conta;
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
 }
