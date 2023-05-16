@@ -54,7 +54,8 @@ public class ContaService {
         }
 
         Connection conn = connection.recuperaConexao();
-        new ContaDAO(conn).alterar(conta.getNumero(),valor);
+        BigDecimal novoValor = conta.getSaldo().add(valor);
+        new ContaDAO(conn).alterar(conta.getNumero(),novoValor);
     }
 
     public void encerrar(Integer numeroDaConta) {
@@ -75,4 +76,10 @@ public class ContaService {
             throw new RegraDeNegocioException("NÃO EXISTE CONTA CADASTRADA COM ESTE NÚMERO!");
         }
     }
+
+    public void realizarTransferencia(Integer numeroDaContaOrigem, Integer numeroDaContaDestino,BigDecimal valor){
+        this.realizarSaque(numeroDaContaOrigem, valor);
+        this.realizarDeposito(numeroDaContaDestino,valor);
+    }
+
 }

@@ -11,10 +11,10 @@ public class Conta {
     private BigDecimal saldo;
     private Cliente titular;
 
-    public Conta(Integer numero, Cliente titular) {
+    public Conta(Integer numero, Cliente titular,BigDecimal saldo) {
         this.numero = numero;
         this.titular = titular;
-        this.saldo = BigDecimal.ZERO;
+        this.saldo = saldo;
     }
 
     public boolean possuiSaldo() {

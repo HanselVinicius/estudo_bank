@@ -21,7 +21,7 @@ public class ContaDAO {
 
      public void salvar(DadosAberturaConta dadosDaConta){
          Cliente cliente = new Cliente(dadosDaConta.dadosCliente());
-         Conta conta = new Conta(dadosDaConta.numero(),cliente);
+         Conta conta = new Conta(dadosDaConta.numero(),cliente,BigDecimal.ZERO);
          String sql =  "INSERT INTO conta(numero,saldo,cliente_nome,cliente_cpf,cliente_email)"+
                  "values(?,?,?,?,?)";
 
@@ -59,7 +59,7 @@ public class ContaDAO {
                 String cpf = rs.getString(4);
                 String email = rs.getString(5);
                 Cliente cliente = new Cliente(new DadosCadastroCliente(nome, cpf, email));
-                contas.add(new Conta(numero,cliente));
+                contas.add(new Conta(numero,cliente,saldo));
 
             }
             rs.close();
@@ -85,7 +85,7 @@ public class ContaDAO {
                 Integer numeroRecuperado = rs.getInt(1);
                 BigDecimal saldo = rs.getBigDecimal(2);
                 Cliente  cliente = new Cliente(new DadosCadastroCliente(rs.getString(3), rs.getString(4), rs.getString(5)));
-                conta = new Conta(numeroRecuperado,cliente);
+                conta = new Conta(numeroRecuperado,cliente,saldo);
             }
             rs.close();
             ps.close();
@@ -108,9 +108,16 @@ public class ContaDAO {
              ps.setInt(2,numero);
 
              ps.execute();
+             conn.commit();
              ps.close();
              conn.close();
          }catch (SQLException e){
+             try{
+                 conn.rollback();
+             }catch (SQLException ex){
+                 throw new RuntimeException(e);
+
+             }
              throw new RuntimeException(e);
          }
 
